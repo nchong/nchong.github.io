@@ -1,0 +1,18 @@
+To: Dstl, HP, EPSRC, ARM, BCS and BT
+
+My work is concerned with the practical foundations of "Technology Everywhere" and helping ICT build correct, more robust and reliable technology using formal verification. The huge impact of ICT means that understanding these foundations is more vital than ever and formal verification has the potential to have a valuable role in helping to build more reliable and dependable technology.
+
+I believe this is pioneering research because of the serious challenges involved in making this a reality. Formal verification has tremendous promise, but more research and engagement is required for this technology to be truly valuable to industry. Consequently, to make a difference this research requires theoretical, practical and engineering knowledge that builds bridges between academic research and industry.
+
+The goal of correct, more robust and reliable software is already a prime concern for industry. Certain sectors of industry -- notably hardware design, automotive and aviation -- have already begun embracing formal verification methods. Indeed, recent acquisitions of verification companies such as Monoidics by Facebook point to an increasing demand in industry for practical formal methods.
+
+Prior to my PhD, I worked in industry as a research engineer at ARM so I am familiar with the use of formal verification in microprocessor design. My research at ARM included establishing deadlock-freedom guarantees for cache-coherence protocols, reasoning about weak memory models and the semantics of architectural specifications.
+
+During my PhD, I have designed and implemented practical verification methods for the class of 'data-parallel' programs. This class of parallel program is characterised by computing simultaneous operations across multiple data-streams and has seen renewed interest with the rise of general-purpose GPU (graphics processing unit) computing. This has seen GPUs become commonplace as accelerators (in high-performance, desktop and even embedded platforms) for many diverse applications and is therefore a primary motivation for developing new verification techniques in this domain.
+
+My research has built new theory and abstractions and moreover, I have made them practical. My research lives in the form of GPUVerify, a formal verification tool developed at Imperial College London and Microsoft Research. You can try GPUVerify online [0] or watch YouTube videos about it [1]. During my PhD, I have worked hard to communicate my research in both academia and industry so that my results are available and accessible. In particular, GPUVerify has successfully revealed bugs in software from major companies, such as NVIDIA and AMD, and Imperial College London has recently started a technology transfer with ARM for this technology.
+
+In summary, I believe this is a pioneering area of research and that my background in both industry and academia means that I am fortunately placed for my research to make a difference to the practical foundations of "Technology Everywhere."
+
+[0] http://multicore.doc.ic.ac.uk/tools/GPUVerify/demo.php
+[1] http://multicore.doc.ic.ac.uk/tools/GPUVerify/videos.php

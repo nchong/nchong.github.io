@@ -1,1 +1,137 @@
-Hello World
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang='en' xml:lang='en' xmlns='http://www.w3.org/1999/xhtml'>
+  <head>
+    <meta content='text/html;charset=UTF-8' http-equiv='content-type' />
+    <title>Nathan Chong</title>
+    <link href='stylesheets/main.css' rel='stylesheet' />
+  </head>
+  <body>
+    <div id='screen'>
+      <div class='central700'>
+        <div id='header'></div>
+        <div id='headshot'>
+          <img alt='headshot' src='images/headshot.jpg' width='240px' />
+        </div>
+        <h1>Nathan Chong</h1>
+        <p>
+          I am currently a researcher for <a href="http://arm.com/research">ARM</a>, where I work on hardware and software at many levels of the system stack.
+          My research interests are parallel programming, computer architecture and formal reasoning.
+          Specifications and problems at the hardware/software boundary get me excited.
+          My previous work in this area include proofs of correctness for cache-coherence protocols, memory models and formalising architectural specifications.
+          My PhD focused on scalable verification techniques for data-parallel programs.
+        </p>
+        <h2>Thesis</h2>
+        <ul>
+          <li><a href='papers/thesis.pdf'>Scalable Verification Techniques for Data-Parallel Programs</a></li>
+          <li><a href='http://github.com/nchong/thesis-artifact'>Supplementary code</a></li>
+          <li>My <a href="http://multicore.doc.ic.ac.uk/tools/GPUVerify/OOPSLA13/">OOPSLA'13 artifact</a> provides the experiments and code for chapter 4</li>
+          <li>My <a href="http://multicore.doc.ic.ac.uk/tools/GPUVerify/POPL14/">POPL'14 artifact</a> provides the experiments and code for chapter 5</li>
+        </ul>
+        <h2>ICT Pioneers, June 2014</h2>
+        <p>
+          I was very fortunate to take part in the <a href="http://www.epsrc.ac.uk/research/ourportfolio/themes/ict/activities/impact/ukictpioneers/">EPSRC ICT Pioneers 2014</a> competition.
+          The core message of my talk was about the need and opportunity for static verification to provide powerful tools to help programmers write better programs.
+          For more information about GPUVerify check out our <a href="http://multicore.doc.ic.ac.uk/tools/GPUVerify/">main webpage</a> and these introductory <a href="http://multicore.doc.ic.ac.uk/tools/GPUVerify/tutorials.php">tutorials</a> and <a href="http://multicore.doc.ic.ac.uk/tools/GPUVerify/videos.php">videos</a>.
+        </p>
+        <ul>
+          <li><a href="ict-pioneers/ict-pioneers.txt">My entry essay</a></li>
+          <li><a href="http://vimeo.com/nyc04/ictpioneers">My video</a></li>
+          <li><a href="ict-pioneers/ict-poster.pdf">Poster</a></li>
+        </ul>
+        <h2>Tools</h2>
+        <p>
+          I am a key contributor to <a href="http://multicore.doc.ic.ac.uk/tools/GPUVerify">GPUVerify</a>, a verification technique and tool for the automatic analysis of GPU kernels written in OpenCL and CUDA.
+          At ARM, prior to my PhD, I developed prototypes and tools for CPU virtualisation (now found in the ARMv7 architecture), cache coherence verification (now in AMBA4 ACE) and instruction set simulators (the Cortex-M1 simulator shipped in RVDS).
+        </p>
+        <p>
+          I am an advocate of repeatable and reproducible research that enables other researchers to build upon my work.
+          The accompanying <a href="http://multicore.doc.ic.ac.uk/tools/GPUVerify/OOPSLA13/">artifact</a> to my OOPSLA'13 paper was approved by the <a href="http://splashcon.org/2013/cfp/665">OOPSLA evaluation committee</a> and allows others to use GPUVerify and repeat the experimental evaluation given in my paper.
+          I served on the <a href="http://pldi14-aec.cs.brown.edu/committee/index.html">PLDI 2014 artifact evaluation committee</a> and <a href="http://popl15-aec.cs.umass.edu">POPL 2015 artifact evaluation committee</a>.
+        </p>
+        <h2>Papers</h2>
+        <ul id='papers'>
+          <li>
+            [<a href="http://multicore.doc.ic.ac.uk/publications/invgen-arxiv-16.html">Webpage</a>]</span>
+            <span class='authors'>Adam Betts, Nathan Chong, Pantazis Deligiannis and Alastair F. Donaldson,</span>
+            <span class='title'>
+              <q>Implementing and Evaluating Candidate-Based Invariant Generation</q>,
+            </span>&nbsp;
+            <span class='in'>arxiv coRR,</span>
+            <span class='year'>2016</span>
+          </li>
+          <li>
+            <span class='authors'>Adam Betts, Nathan Chong, Alastair F. Donaldson, Jeroen Ketema, Shaz Qadeer, Paul Thomson and John Wickerson,</span>
+            <span class='title'>
+              <q>The Design and Implementation of a Verification Technique for GPU Kernels</q>,
+            </span>&nbsp;
+            <span class='in'>ACM Transactions on Programming Languages and Systems,</span>
+            <span class='year'>2015</span>
+          </li>
+          <li>
+            <span class='authors'>Christopher Lidbury, Andrei Lascu, Nathan Chong, Alastair F. Donaldson</span>
+            <span class='title'>
+              <q>Many-Core Compiler Fuzzing</q>,
+            </span>&nbsp;
+            <span class='in'>ACM SIGPLAN Conference on Programming Language Design and Implementation,</span>
+            <span class='year'>2015</span>
+          </li>
+          <li>
+            [<a href="http://multicore.doc.ic.ac.uk/tools/GPUVerify/CAV2014/">Webpage</a>]</span>
+            <span class='authors'>Ethel Bardsley, Adam Betts, Nathan Chong, Peter Collingbourne, Pantazis Deligiannis, Alastair F. Donaldson, Jeroen Ketema, Daniel Liew and Shaz Qadeer,</span>
+            <span class='title'>
+              <q>Engineering a Static Verification Tool for GPU Kernels</q>,
+            </span>&nbsp;
+            <span class='in'>Computer Aided Verification,</span>
+            <span class='year'>2014</span>
+          </li>
+          <li>
+            <span class="link">[<a href="papers/popl14.pdf">pdf</a>][<a href="http://multicore.doc.ic.ac.uk/tools/GPUVerify/POPL14/">Artifact</a>]</span>
+            <span class='authors'>Nathan Chong, Alastair F. Donaldson, and Jeroen Ketema,</span>
+            <span class='title'>
+              <q>A Sound and Complete Abstraction for Reasoning about Parallel Prefix Sums</q>,
+            </span>&nbsp;
+            <span class='in'>ACM SIGPLAN Symposium on Principles of Programming Languages,</span>
+            <span class='year'>2014</span>
+          </li>
+          <li>
+          <span class="link">[<a href="papers/oopsla13.pdf">pdf</a>][<a href="http://multicore.doc.ic.ac.uk/tools/GPUVerify/OOPSLA13/">Artifact</a>]</span>
+            <span class='authors'>Nathan Chong, Alastair F. Donaldson, Paul H.J. Kelly, Jeroen Ketema and Shaz Qadeer,</span>
+            <span class='title'>
+              <q>Barrier Invariants: a Shared State Abstraction for the Analysis of Data-Dependent GPU Kernels</q>,
+            </span>&nbsp;
+            <span class='in'>ACM SIGPLAN Conference on Object-Oriented Programming, Systems, Languages, and Applications,</span>
+            <span class='year'>2013</span>
+          </li>
+          <li>
+            <span class="link">[<a href="http://wp.doc.ic.ac.uk/afd/paper_oopsla2012/">link</a>]</span>
+            <span class='authors'>Adam Betts, Nathan Chong, Alastair F. Donaldson, Shaz Qadeer and Paul Thomson,</span>
+            <span class='title'>
+              <q>GPUVerify: a Verifier for GPU Kernels</q>,
+            </span>&nbsp;
+            <span class='in'>ACM SIGPLAN Conference on Object-Oriented Programming, Systems, Languages, and Applications,</span>
+            <span class='year'>2012</span>
+          </li>
+          <li>
+            <span class='authors'>Nathan Chong and Emre Ozer,</span>
+            <span class='title'>
+              <q>IP Modeling and Verification</q>,
+            </span>&nbsp;
+            <span class='in'>Book chapter in Processor and System-on-Chip Simulation (Springer),</span>
+            <span class='year'>2010</span>
+          </li>
+        </ul>
+        <div id='footer'>
+          <a href='mailto:nathan.chong@arm.com'>
+            email
+          </a>
+          <a href='http://uk.linkedin.com/in/nathanchong'>
+            linkedin
+          </a>
+          <a href='http://twitter.com/nathan_chong'>
+            twitter
+          </a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
