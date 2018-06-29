@@ -26,7 +26,7 @@ header = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www
 </style>
 
 <p>
-Annotated slides of my talk from <a href="https://pldi18.sigplan.org">PLDI 2018</a>.
+Annotated slides of my talk (<a href="../PLDI-20June2018.pdf">pdf</a>) from <a href="https://pldi18.sigplan.org">PLDI 2018</a>.
 The slide annotation code is adapted from <a href="http://kcsrk.info/multicore/gc/2017/07/06/multicore-ocaml-gc/">KC Sivaramakrishnan</a> (CC BY 4.0).
 </p>
 
