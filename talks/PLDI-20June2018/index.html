@@ -1,0 +1,510 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html lang='en' xml:lang='en' xmlns='http://www.w3.org/1999/xhtml'>
+  <head>
+    <meta content='text/html;charset=UTF-8' http-equiv='content-type' />
+    <title>Nathan Chong</title>
+    <link href='../../stylesheets/main.css?v=1.0' rel='stylesheet' />
+  </head>
+<body>
+<div id='screen'>
+<div class='central700'>
+<p><a href="https://nchong.github.com">Home</a> > Annotated PLDI 2018 talk</p>
+<h1>The Semantics of Transactions and Weak Memory in x86, Power, ARM, and C++</h1>
+
+<style>
+.annotslide{display:none}
+</style>
+
+<p>
+This is an set of annotated slides of my talk from <a href="https://pldi18.sigplan.org">PLDI 2018</a>.
+The slide annotation code is adapted from <a href="http://kcsrk.info/multicore/gc/2017/07/06/multicore-ocaml-gc/">KC Sivaramakrishnan</a> (CC BY 4.0).
+</p>
+
+<p align="center">
+  Slide <input type="number" id="slidenumber" min="1" /> of <span id="totalslides"></span>
+  <input type="button" value="Go" onclick="currentSlide()" />
+  <button onclick="deltaSlide(-1)">❮ Prev</button>
+  <button onclick="deltaSlide(1)">Next ❯</button>
+  ( ← and → arrow keys also work)
+</p>
+
+<div class="annotslide">
+<p align="center"> <img src="slide.000.png" border="1" alt="slide.000" width="80%" /> </p>
+<ul>
+<li><a href="https://johnwickerson.github.io/transactions/artifacts/companion/extended_PLDI18.pdf">Extended version of our paper</a></li>
+<li><a href="https://johnwickerson.github.io/transactions/">Project page</a></li>
+</ul>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.001.png" border="1" alt="slide.001" width="80%" /> </p>
+<p>My two co-authors, <a href="https://www.doc.ic.ac.uk/~trs15/">Tyler Sorensen</a> and <a href="https://johnwickerson.github.io">John Wickerson</a>, of Imperial College London.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.002.png" border="1" alt="slide.002" width="80%" /> </p>
+<p>Our work is about two key characters:</p>
+
+<ul>
+<li>Transactions, and</li>
+<li>Weak memory</li>
+</ul>
+
+<p>They're interesting characters to consider together because the differ in how they want to treat you as a programmer.</p>
+
+<p>The two books in the background are:</p>
+
+<ul>
+<li>Principles of Transactional Memory by Guerraoui and Kapałka; and</li>
+<li>Reasoning About Parallel Architectures by Collier</li>
+</ul>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.003.png" border="1" alt="slide.003" width="80%" /> </p>
+<p>Transactions want to make your life easier. They say "don't worry about fine-grain locking". Gather your program into a set of transactions and I will promise you:</p>
+
+<ul>
+<li>Atomicity: meaning that a transaction wholly executes, or not at all; and</li>
+<li>Isolation: meaning you can reason about the execution of a transaction as if there were no interference from other threads</li>
+</ul>
+
+<p>So transactions are an appealing form of optimistic concurrency that promise scalable performance without programmer pain.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.004.png" border="1" alt="slide.004" width="80%" /> </p>
+<p>On the other hand, weak memory, if not making your life harder. Then, at the very least, says that you have to understand what's going on underneath, in the machine.</p>
+
+<p>Caching, buffering, out-of-order execution: these are all micro-architectural techniques that break the abstraction of an interleaved semantics. I like to imagine that weak memory is the character that watches over your shoulder saying:</p>
+
+<ul>
+<li>"Are you sure this program is data-race free?"; and</li>
+<li>"Shouldn't you put a barrier there, just to be safe?"</li>
+</ul>
+
+<p>Despite these differences, it's important that we consider these two characters together because modern architectures and languages specify weak memory and have transactional extensions.</p>
+
+<ul>
+<li>This is the case for x86 and Power</li>
+<li>C++ has a draft technical proposal (SG5)</li>
+<li>And inside Arm research, we have been evaluating how transactions would effect the Arm architecture</li>
+</ul>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.005.png" border="1" alt="slide.005" width="80%" /> </p>
+<p>So this is the underlying motivation for our work. And in our paper we have tried to clarify the interplay between these characters:</p>
+
+<ul>
+<li>For real world architectures</li>
+<li>Using rigorous semantics and automated tooling</li>
+</ul>
+
+<p>These are powerful lenses for viewing this problem, with which we have uncovered a number of counterexamples and ambiguities. I will focus on the first of these in the rest of my talk: the unsoundness of lock elision with respect to an Armv8 spinlock. This is a particularly illuminating example because individually, both characters are sound, but, as we shall see, their naive composition is not.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.006.png" border="1" alt="slide.006" width="80%" /> </p>
+<p>Our automated tooling is built on top of the Memalloy tool from <a href="https://dl.acm.org/citation.cfm?id=3009838">Wickerson et al.</a></p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.007.png" border="1" alt="slide.007" width="80%" /> </p>
+<p>If we feed Memalloy:</p>
+
+<ul>
+<li>An axiomatic model of Armv8 with our hypothetical transactional extensions</li>
+<li>Plus lock elision and the spinlock implementation, which I will explain shortly</li>
+</ul>
+
+<p>Then we can ask the tool if the key property of mutual exclusion can be maintained.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.008.png" border="1" alt="slide.008" width="80%" /> </p>
+<p>The counterexample is the screenshot on the right-hand side. In fact, Memalloy can produce multiple counterexamples for this particular problem (See Appendix B of the <a href="https://johnwickerson.github.io/transactions/artifacts/companion/extended_PLDI18.pdf">extended version our paper</a>).</p>
+
+<p>You can replicate this counterexample yourself using our artifact: <a href="https://johnwickerson.github.io/transactions/">https://johnwickerson.github.io/transactions/</a></p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.009.png" border="1" alt="slide.009" width="80%" /> </p>
+<p>Here is the counterexample in more standard notation. We have a program with a single shared variable, <code>v</code>, initially <code>0</code>, and two critical regions. And hence two possible serializations.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.010.png" border="1" alt="slide.010" width="80%" /> </p>
+<p>Here is the counterexample in more standard notation. We have a program with a single shared variable, <code>v</code>, initially <code>0</code>, and two critical regions. And hence two possible serializations.</p>
+
+<ol>
+<li>Left; right: in which case, the final value of <code>v</code> is <code>1</code></li>
+</ol>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.011.png" border="1" alt="slide.011" width="80%" /> </p>
+<p>Here is the counterexample in more standard notation. We have a program with a single shared variable, <code>v</code>, initially <code>0</code>, and two critical regions. And hence two possible serializations.</p>
+
+<ol>
+<li>Left; right: in which case, the final value of <code>v</code> is <code>1</code></li>
+<li>And the other way around, in which case <code>v</code> will be <code>3</code></li>
+</ol>
+
+<p>What would be surprising would be a final value of <code>2</code>. Because this would imply that the critical regions have overlapped. And this, of course, is precisely what a critical region should not do!</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.012.png" border="1" alt="slide.012" width="80%" /> </p>
+<p>In order to properly understand the counterexample, we need to lower this program into Arm assembly.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.013.png" border="1" alt="slide.013" width="80%" /> </p>
+<p>Let's start with the critical regions themselves: by placing the address of <code>v</code> in the <code>X0</code> register. Then <code>v := v + 2</code> is lowered to the load, add and store instructions on the left. And similarly for the right-hand side.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.014.png" border="1" alt="slide.014" width="80%" /> </p>
+<p>Now let's turn to the meatier issue of how to lower the lock and unlock procedures. Let's introduce our first character, transactions. In particular, one of the killer applications of transactions: <em><a href="https://dl.acm.org/citation.cfm?id=564036">lock elision</a></em>.</p>
+
+<p>This is a beautiful idea from Rajwar and Goodman. Their key observation is that if two critical regions turn out to be dynamically disjoint then the serialization caused by locking is unnecessary. The idea then is to try to reclaim this performance by skipping or eliding taking the lock (we are not going to write-to the lock variable). And executing the critical region in some speculative mechanism that allows us to catch dynamic conflicts and, hence, force serialization only when necessary.
+So you can see why transactions are a good fit for this idea.</p>
+
+<p>One subtlety is the if-statement, which checks that the lock variable is free when executing a critical region speculatively.</p>
+
+<p>Imagine that we have a critical region executing speculatively after having read the lock as free. Then should another agent of the system really acquire the lock. That is, by writing to the lock variable. Then the speculative critical region will be aborted due to a conflict on the lock variable. And furthermore, any subsequent critical regions attempting lock elision will be aborted early by the if-statement.</p>
+
+<p>Jumping up: the high level reason for this is because hardware TM systems are best-effort. There is no guarantee of forward progress for transactions. And so we must always provide a software fallback path such as acquiring the lock. So the if-statement is important for the correctness of lock elision in this case where we will be mixing like this.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.015.png" border="1" alt="slide.015" width="80%" /> </p>
+<p>Back to the program.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.016.png" border="1" alt="slide.016" width="80%" /> </p>
+<p>Let's apply lock elision including the important if-statement.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.017.png" border="1" alt="slide.017" width="80%" /> </p>
+<p>And lower it to Arm assembler. At this point it's important to point out that the transactional instructions are not part of the Armv8 architecture; they are hypothetical but representative instructions of a research prototype.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.018.png" border="1" alt="slide.018" width="80%" /> </p>
+<p>And lower it to Arm assembler. At this point it's important to point out that the transactional instructions are not part of the Armv8 architecture; they are hypothetical but representative instructions of a research prototype.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.019.png" border="1" alt="slide.019" width="80%" /> </p>
+<p>Now let's focus on the left-hand side by using our second character, weak memory.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.020.png" border="1" alt="slide.020" width="80%" /> </p>
+<p>Let's use a spinlock implementation from the Arm reference manual.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.021.png" border="1" alt="slide.021" width="80%" /> </p>
+<p>Locks in real-world applications are, of course, much more complicated than this one. Nonetheless, this implementation is interesting because it uses a number of weak memory effects and contains the essence of more complicated locks.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.022.png" border="1" alt="slide.022" width="80%" /> </p>
+<p>The overarching aim, of course, is to atomically update the lock from free to taken.</p>
+
+<p>The heart of this are these pair of exclusive instructions, which you can be consider to be the RISC alternative to a compare-and-swap operation.</p>
+
+<p>A load-exclusive reads-from the lock variable. And sets a monitor that will watch the location. When the subsequent store-exclusive attempts to update the location then one of two outcomes can occur:</p>
+
+<ul>
+<li>If there has not been an intervening write in-between the time of the load-exclusive and the store-exclusive then the update is successful.</li>
+<li>Otherwise, the update fails</li>
+</ul>
+
+<p>Either way, the success or failure of the store-exclusive is returned in the status register, <code>W4</code>.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.023.png" border="1" alt="slide.023" width="80%" /> </p>
+<p><a href="https://dl.acm.org/citation.cfm?id=2254102">Sarkar et al.</a> studied the Power equivalent of exclusives and I like their explanation. The write of a successful store-exclusive, ...</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.024.png" border="1" alt="slide.024" width="80%" /> </p>
+<p><a href="https://dl.acm.org/citation.cfm?id=2254102">Sarkar et al.</a> studied the Power equivalent of exclusives and I like their explanation. The write of a successful store-exclusive, which we denote by admitting it into this read-modify-write relation, ...</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.025.png" border="1" alt="slide.025" width="80%" /> </p>
+<p><a href="https://dl.acm.org/citation.cfm?id=2254102">Sarkar et al.</a> studied the Power equivalent of exclusives and I like their explanation. The write of a successful store-exclusive, which we denote by admitting it into this read-modify-write relation, must be the <em>immediate coherence successor</em> of the write read-from by the read-exclusive.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.026.png" border="1" alt="slide.026" width="80%" /> </p>
+<p>In other words, for the exclusive update to be atomic there must not be any intervening writes.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.027.png" border="1" alt="slide.027" width="80%" /> </p>
+<p>This is a spinlock with two conditions in which we have to retry:</p>
+
+<ul>
+<li>If the lock is already taken</li>
+<li>And if the store-exclusive fails. This would be the case where we have multiple store-exclusives racing to set the lock variable. Only one can be the immediate coherence successor.</li>
+</ul>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.028.png" border="1" alt="slide.028" width="80%" /> </p>
+<p>Unlocking is straightforward. We store zero to the lock variable.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.029.png" border="1" alt="slide.029" width="80%" /> </p>
+<p>And finally, and to foreshadow what is to come, most importantly, we have the acquire/release semantics added to:</p>
+
+<ul>
+<li>The load-exclusive of the lock procedure; and</li>
+<li>The store of the unlock</li>
+</ul>
+
+<p>Acquire/Release can informally be thought of as "half-barriers". They are barriers in the sense that they delimit the scope of the critical region:</p>
+
+<ul>
+<li>Top</li>
+<li>Bottom</li>
+</ul>
+
+<p>And they are half-barriers because they forbid reordering one-way, but not the other. The critical region can grow: that is, we can move things into the critical region. But we cannot hoist above the acquire or below the release.</p>
+
+<p>If you are familiar with the term roach motel semantics. Then you could say acquire/release allow you to check-in to the hotel (i.e., the critical region) but not to check-out.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.030.png" border="1" alt="slide.030" width="80%" /> </p>
+<p>More formally, we say that a read-acquire is ordered-before any program-order successor. And analogous any program-order predecessor is ordered-before a write-release. Where ordered-before is a relation that must not contain cycles for the execution to be well-formed.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.031.png" border="1" alt="slide.031" width="80%" /> </p>
+<p>Back to the program.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.032.png" border="1" alt="slide.032" width="80%" /> </p>
+<p>Let's apply the spinlock to the left-hand side, which completes our lowering.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.033.png" border="1" alt="slide.033" width="80%" /> </p>
+<p>Let's review what we've done so far. We've taken the program on the top-left and lowered it into Arm assembly. A way you might think about this is that we have applied lock elision to the program and it turns out dynamically that the left-hand side has fallen-back to acquiring the lock using the spinlock implementation whilst the right-hand side will attempt lock elision. And, the key question is whether a legal outcome of this program is a final value of <code>v == 2</code>.</p>
+
+<p><strong>In other words, the stage is set for our two characters...</strong></p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.034.png" border="1" alt="slide.034" width="80%" /> </p>
+<p>Imagine that nothing has executed: <code>v</code> is <code>0</code> and the lock is free.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.035.png" border="1" alt="slide.035" width="80%" /> </p>
+<p>Our first instruction is the load-exclusive of the left. Because nothing can be hoisted above an acquire this must be the first instruction from the left-hand side. This reads the lock variable as <code>0</code> so we will fall-through the branch.</p>
+
+<p>Now at this point you might guess that the only two steps possible are:</p>
+
+<ul>
+<li>The store-exclusive of the left-hand side; or</li>
+<li>The <code>TXBEGIN</code> of the right-hand side</li>
+</ul>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.036.png" border="1" alt="slide.036" width="80%" /> </p>
+<p>It turns out that the Arm memory model allows another behaviour: we can execute the load of <code>v</code> from the critical region. This is very subtle so I will say this again: we are going to execute the load of the critical region before we have acquired the lock!</p>
+
+<p><em>Why is this behaviour allowed?</em> Notice that the acquire is on the load-exclusive and not the store-exclusive. So we can't hoist above the load, but there is nothing preventing us from hoisting in-between.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.037.png" border="1" alt="slide.037" width="80%" /> </p>
+<p><em>Is this behaviour safe?</em> Yes, but only individually (spinlock implementation vs. spinlock implementation). Imagine we have two critical regions that are in the same state: they have both read the lock variable and started executing their critical regions speculatively.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.038.png" border="1" alt="slide.038" width="80%" /> </p>
+<p>In this case the store-exclusives of both critical regions are racing to become the immediate coherence successor. As we've said before (slide 27), only one can succeed so the other must squash its speculation. The semantics of exclusives ensures the soundness of this implementation.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.039.png" border="1" alt="slide.039" width="80%" /> </p>
+<p>There is an alternative way of looking at this, which is that the Arm architecture allows the success of a store-exclusive to be guaranteed very early. This is a point made by the operational memory model from Pulte et al. from Cambridge. So we could imagine that the machine has decided it will ensure the success of the store-exclusive by fiat.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.040.png" border="1" alt="slide.040" width="80%" /> </p>
+<p>Back to the execution and note that the value of <code>W5</code> is <code>0</code>.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.041.png" border="1" alt="slide.041" width="80%" /> </p>
+<p>Now let's execute the transaction in its totality.</p>
+
+<p>We start the transaction. It reads the lock variable, but it's free so we jump to the critical region. This updates <code>v</code> to <code>1</code>. Of course, this is delayed until the transaction commits. But we are allowed to commit the transaction because we really have run it in isolation. There are no conflicts on either <code>v</code> or the lock variable. So when we commit the transaction we can update <code>v</code> to <code>1</code>.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.042.png" border="1" alt="slide.042" width="80%" /> </p>
+<p>At this point, I think you can see the counterexample collapsing in on itself. All we have to do is ensure that the store-exclusive will succeed.</p>
+
+<p>And, it can. Because there has not been an intervening write in-between the time of the load-exclusive and now. Of course there hasn't. Because eliding or skipping the lock is the entire point of lock elision!</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.043.png" border="1" alt="slide.043" width="80%" /> </p>
+<p>Now we almost have the result we're after.</p>
+
+<p>We execute the remainder of the critical region on the left, but using the stale value of <code>v == 0</code>. So we store <code>v = 2</code> and finally unlock, which finishes the execution with exactly the state that indicates a violation of mutual exclusion.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.044.png" border="1" alt="slide.044" width="80%" /> </p>
+<p>Looking back, what is so interesting is that individually both of our characters are sound. In the case where we only have transactions then the property of isolation would ensure that serialization occurs correctly. It is the combination that is unsound. And, to be more precise, notice that the very characteristic that makes this spinlock safe (the fact that the lock variable must be written-to) is exactly the feature that lock elision takes advantage of.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.045.png" border="1" alt="slide.045" width="80%" /> </p>
+<p>Rajwar and Goodman have this quote in their paper. I think they were almost right, except that they had one key assumption that they did not make explicit.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.046.png" border="1" alt="slide.046" width="80%" /> </p>
+<p>It is that lock acquisition must happen-before any access of the critical region. And, this is a reasonable assumption, but not true for locks such as the spinlock I showed you using a load-acquire-exclusive.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.047.png" border="1" alt="slide.047" width="80%" /> </p>
+<p>So depending on how you count, this is either a 7 or 17 year counterexample. In fairness to Rajwar and Goodman, in 2001 the idea of a load-acquire-exclusive did not exist. That came along in 2011 when acquire/release semantics were introduced in Armv8.</p>
+
+<p>I'll also point out that in 2016 there was a prescient question on Arm support from Olivier Delande, with the response: "So while it is technically true that [the critical region] could be [executed] before you owned the spinlock, I don't see that it has actually broken anything." <a href="https://bit.ly/2LPbnIc">https://bit.ly/2LPbnIc</a></p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.048.png" border="1" alt="slide.048" width="80%" /> </p>
+<p>There are a few ways we can fix the problem.</p>
+
+<ul>
+<li>The easiest is to make Rajwar and Goodman's assumption true by inserting a DMB barrier in-between the lock and critical region. Or using a new Armv8.1 atomic that allows us to have acquire-release semantics on both the read and write of an atomic.</li>
+<li>Otherwise, we could insert a store to the lock variable after eliding the lock, but at the cost of causing all elided locks to serialize.</li>
+</ul>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.049.png" border="1" alt="slide.049" width="80%" /> </p>
+<p>Popping up to the top-level.</p>
+
+<p>I'd like to call attention to some key ideas that were critical to our work. Particularly, the work of <a href="https://dl.acm.org/citation.cfm?id=3009838">Wickerson et al.</a> and <a href="https://dl.acm.org/citation.cfm?id=3037723">Lustig et al.</a> who provide the ideas for being able to generate "just the right" tests for testing our model's soundness and completeness; as well as the tool support to automatically check properties such as lock elision.</p>
+
+<p>Finally, there is a highly <a href="https://dl.acm.org/citation.cfm?id=3158106">related paper</a> at POPL 2018 by Brijesh Dongol, Radha Jagadeesan and James Riely. Their work has a similar aim to study both characters using axiomatic semantics. However, where our work is focused on the semantics of specific, real-world systems. Their work is focused on providing a general semantic extension of transactions. So their models are weaker than our models. Which is good news because they are complementary:</p>
+
+<ul>
+<li>This means the empirical evidence that our models are sound carries up to their models</li>
+<li>And the abstraction proofs that they have for their models are applicable to our models</li>
+</ul>
+
+<p>I recommend checking out James' POPL talk: <a href="https://bit.ly/2xJvbcT">https://bit.ly/2xJvbcT</a></p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.050.png" border="1" alt="slide.050" width="80%" /> </p>
+<p>In conclusion, our work is a step towards a better understanding of the interplay between these two characters for real-world architectures. Using rigorous semantics and automated tooling we have:</p>
+
+<ul>
+<li>Empirical evidence for the soundness and completeness of our x86 and Power models</li>
+<li>As well as the bounded verification of key properties (such as the compilation of C++ transactions to architectural transactions)</li>
+</ul>
+
+<p>The counterexample that I've shown you demonstrates that a naive composition of lock elision with an Armv8 spinlock using load-acquire-exclusives is unsound. And underscores, yet again, the critical need for rigorous semantics to clarify the complexities of these important machines that we design and build.</p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.051.png" border="1" alt="slide.051" width="80%" /> </p>
+<ul>
+<li>Alglave et al., "Herding Cats: Modelling, Simulation, Testing, and Data-mining for Weak Memory", TOPLAS 2014, <a href="https://dl.acm.org/citation.cfm?id=2627752">https://dl.acm.org/citation.cfm?id=2627752</a></li>
+<li>Arm, "ARMv8 Architecture Reference Manual"</li>
+<li>Cain et al., "Robust Architectural Support for Transactional Memory in the Power Architecture", ISCA 2013, <a href="https://dl.acm.org/citation.cfm?id=2485942">https://dl.acm.org/citation.cfm?id=2485942</a></li>
+<li>Dongol et al., "Transactions in Relaxed Memory Architectures", POPL 2018, <a href="https://dl.acm.org/citation.cfm?id=3158106">https://dl.acm.org/citation.cfm?id=3158106</a></li>
+<li>Gharachorloo et al., "Memory consistency and event ordering in scalable shared-memory multiprocessors", ISCA 1990, <a href="https://dl.acm.org/citation.cfm?id=325102">https://dl.acm.org/citation.cfm?id=325102</a></li>
+<li>Lustig et al., "Automated Synthesis of Comprehensive Memory Model Litmus Test Suites", ASPLOS 2017, <a href="https://dl.acm.org/citation.cfm?id=3037723">https://dl.acm.org/citation.cfm?id=3037723</a></li>
+<li>Pulte et al., "Simplifying ARM Concurrency: Multicopy-atomic Axiomatic and Operational Models for ARMv8", POPL 2018, <a href="https://dl.acm.org/citation.cfm?id=3158107">https://dl.acm.org/citation.cfm?id=3158107</a></li>
+<li>Rajwar and Goodman, "Speculative Lock Elision: Enabling Highly Concurrent Multithreaded Execution", MICRO 2001, <a href="https://dl.acm.org/citation.cfm?id=564036">https://dl.acm.org/citation.cfm?id=564036</a></li>
+<li>Sarkar et al., "Synchronising C/C++ and POWER", PLDI 2012, <a href="https://dl.acm.org/citation.cfm?id=2254102">https://dl.acm.org/citation.cfm?id=2254102</a></li>
+<li>Wickerson et al., "Automatically Comparing Memory Consistency Models", POPL 2017, <a href="https://dl.acm.org/citation.cfm?id=3009838)">https://dl.acm.org/citation.cfm?id=3009838)</a></li>
+</ul>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.052.png" border="1" alt="slide.052" width="80%" /> </p>
+<p></p>
+
+</div>
+<div class="annotslide">
+<p align="center"> <img src="slide.053.png" border="1" alt="slide.053" width="80%" /> </p>
+<p></p>
+
+</div>
+<script>
+var slideIndex = 1;
+
+function init() {
+  showSlide(slideIndex);
+  var x = document.getElementsByClassName("annotslide");
+  document.getElementById("slidenumber").max = x.length;
+  document.getElementById("totalslides").innerHTML = x.length;
+}
+
+init();
+
+function deltaSlide(n) {
+  showSlide(slideIndex += n);
+}
+
+function currentSlide() {
+  showSlide(slideIndex = Number(document.getElementById("slidenumber").value));
+}
+
+function showSlide(n) {
+  var i;
+  var x = document.getElementsByClassName("annotslide");
+  if (n > x.length) {slideIndex = 1}
+  if (n < 1) {slideIndex = x.length}
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = "none";
+  }
+  x[slideIndex-1].style.display = "block";
+  document.getElementById("slidenumber").value = slideIndex;
+}
+
+document.onkeydown = function(evt) {
+	evt = evt || window.event;
+	switch (evt.keyCode) {
+		case 37:
+			deltaSlide(-1);
+			break;
+		case 39:
+			deltaSlide(1);
+			break;
+	}
+};
+
+</script>
+</div>
+</div>
+</body>
+</html>
+
