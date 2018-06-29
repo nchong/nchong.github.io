@@ -135,7 +135,7 @@ Now let's focus on the left-hand side by using our second character, weak memory
 
 ---
 
-Let's use a spinlock implementation from the Arm reference manual.
+Let's use a spinlock implementation from the [Arm architecture reference manual](http://infocenter.arm.com).
 
 ---
 
@@ -318,7 +318,7 @@ The counterexample that I've shown you demonstrates that a naive composition of 
 ---
 
   - Alglave et al., "Herding Cats: Modelling, Simulation, Testing, and Data-mining for Weak Memory", TOPLAS 2014, <https://dl.acm.org/citation.cfm?id=2627752>
-  - Arm, "ARMv8 Architecture Reference Manual"
+  - Arm, "ARMv8 Architecture Reference Manual", <http://infocenter.arm.com>
   - Cain et al., "Robust Architectural Support for Transactional Memory in the Power Architecture", ISCA 2013, <https://dl.acm.org/citation.cfm?id=2485942>
   - Dongol et al., "Transactions in Relaxed Memory Architectures", POPL 2018, <https://dl.acm.org/citation.cfm?id=3158106>
   - Gharachorloo et al., "Memory consistency and event ordering in scalable shared-memory multiprocessors", ISCA 1990, <https://dl.acm.org/citation.cfm?id=325102>
