@@ -69,7 +69,7 @@ Then we can ask the tool if the key property of mutual exclusion can be maintain
 
 ---
 
-The counterexample is the screenshot on the right-hand side. In fact, Memalloy can produce multiple counterexamples for this particular problem (See Appendix B of the [extended version our paper](https://johnwickerson.github.io/transactions/artifacts/companion/extended_PLDI18.pdf)).
+The counterexample is the screenshot on the right-hand side. In fact, Memalloy can produce multiple counterexamples for this particular problem (See Appendix B of the [extended version of our paper](https://johnwickerson.github.io/transactions/artifacts/companion/extended_PLDI18.pdf)).
 
 You can replicate this counterexample yourself using our artifact: <https://johnwickerson.github.io/transactions/>
 
